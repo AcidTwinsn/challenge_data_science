@@ -194,12 +194,14 @@ class EnviosPromedio(Toplevel):
         try:
             tienda = list(dictTotales.keys())
             costo_prom_envios = list(dictTotales.values())
+            prom_envios_tiendas = sum(costo_prom_envios) / len(costo_prom_envios)
             maximo = max(costo_prom_envios)
             colorNota = ['red' if costo_prom_envio == maximo else 'green' for costo_prom_envio in costo_prom_envios]
             plt.bar(tienda, costo_prom_envios, color=colorNota)
             plt.xlabel('Tiendas')
-            plt.ylabel('Promedio de Costos de Envíos')
+            plt.ylabel(f'Promedio de Costos de Envíos. El Promedio de Costos de Envíos de todas las Tiendas = ${prom_envios_tiendas:,.2f}')
             plt.title(f'Costo promedio de Envíos por Tienda')
+            plt.axhline(y=prom_envios_tiendas, color='black', linestyle='--')
             plt.show()
         except Exception as e:
             messagebox.showerror("Error", f"Error al generar la gráfica: {e}", icon='error')

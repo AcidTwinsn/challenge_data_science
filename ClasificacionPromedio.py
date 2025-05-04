@@ -166,7 +166,7 @@ class ClasificacionPromedio(Toplevel):
                     #Informacion por cada tienda
                     diccionarioPromedios[nombreTienda] = promedio
                     #se invoca a la funcion para crear las tablas que muestran la informacion                    
-                    ClasificacionPromedio.crear_tabla(self, tienda, color_fondo)
+                    ClasificacionPromedio.crear_tabla(self, tienda, color_fondo,)
                 else:
                     messagebox.showerror("Error", f"Error al procesar el archivo {nombreTienda}", icon='error')    
         else:
@@ -195,7 +195,7 @@ class ClasificacionPromedio(Toplevel):
                         width=32, 
                         height=32,
                         relief="flat",
-                        command=lambda: ClasificacionPromedio.graficar_resultados(diccionarioPromedios, criterio))
+                        command=lambda: ClasificacionPromedio.graficar_resultados(diccionarioPromedios, criterio, promedio))
             btn_mostrar_grafica.image = icono_btn_mostrar_grafica
             btn_mostrar_grafica.pack(padx=10, pady=20)
 
@@ -216,14 +216,16 @@ class ClasificacionPromedio(Toplevel):
         except Exception as e:
             messagebox.showerror("Error", f"Error al crear el DataFrame: {e}", icon='error')
 
-    def graficar_resultados(diccionarioPromedios, criterio):
+    def graficar_resultados(diccionarioPromedios, criterio, promedio):
         try:
             tienda = list(diccionarioPromedios.keys())
-            promedio = list(diccionarioPromedios.values())    
+            promedio = list(diccionarioPromedios.values())
+            prom_todas_tiendas = sum(promedio) / len(promedio)   
             plt.barh(tienda, promedio)
             plt.xlabel(f'{criterio} por tienda')
-            plt.ylabel('Tiendas')
+            plt.ylabel(f'El Promedio de {criterio} de todas las Tiendas = {prom_todas_tiendas:,.2f}')
             plt.title(f'Promedio de {criterio} por tienda')
+            plt.axvline(x=prom_todas_tiendas, color='red', linestyle='--')
             plt.show()
         except Exception as e:
             messagebox.showerror("Error", f"Error al generar la gráfica: {e}", icon='error')

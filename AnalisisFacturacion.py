@@ -193,12 +193,14 @@ class AnalisisFacturacion(Toplevel):
         try:
             tienda = list(dictTotales.keys())
             ingresos = list(dictTotales.values())
+            prom_ingresos_tiendas = sum(ingresos) / len(ingresos)
             minimo = min(ingresos)
             colorNota = ['green' if ingreso > minimo else 'red' for ingreso in ingresos]
             plt.bar(tienda, ingresos, color=colorNota)
             plt.title(f'Ingresos de las Tiendas')
             plt.xlabel('Tiendas')
-            plt.ylabel('Total de Ingresos')
+            plt.ylabel(f'Total de Ingresos. El Promedio de ingresos de todas las Tiendas = ${prom_ingresos_tiendas:,.2f}')
+            plt.axhline(y=prom_ingresos_tiendas, color='black', linestyle='--')
             plt.show()
         except Exception as e:
             messagebox.showerror("Error", f"Error al generar la gráfica: {e}", icon='error')
