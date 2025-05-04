@@ -1,7 +1,6 @@
 from tkinter.ttk import *
-import numpy as np
 import pandas as pd
-from tkinter import Canvas, IntVar, StringVar, filedialog, messagebox, Toplevel, Frame, Button, Label
+from tkinter import Canvas, PhotoImage, StringVar, filedialog, messagebox, Toplevel, Frame, Button, Label
 from pandastable import Table
 import os
 import matplotlib.pyplot as plt
@@ -11,52 +10,64 @@ class ClasificacionPromedio(Toplevel):
     def __init__(self, master=None):
         super().__init__(master)
         self.title("Clasificación Promedio")
-        self.geometry("1000x800")
-        self.configure(bg="#c3f1fd")
+        self.geometry("800x600")
+        color_fondo = "#c3f1fd"
 
-        self.canvas = Canvas(self, bg = "#c3f1fd")
-        self.scrollbar = Scrollbar(self, orient="vertical", command=self.canvas.yview)
-        self.scrollbar.pack(side="right", fill="y")
-        self.canvas.pack(side="left", fill="both", expand=True)
+        #Estilos de fuentes
+        fuente_titulo = ("Arial", 14)
+        fuente_subtitulo = ("Arial", 12, "italic")
+        fuente_texto = ("Arial", 11)
 
-        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+        #Propiedades de iconos y tamaño de botones
+        ancho_icono = 32
+        largo_icono = 32
 
-        self.interior = Frame(self.canvas, bg = "#c3f1fd")
-        self.canvas.create_window((0, 0), window=self.interior, anchor="nw")
-
-        self.interior.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
-
+        #variables generales
         diccionarioPromedios = {}
         nombreTienda = ""
 
-        
-        self.label = Label(
-            self.interior, 
-            text="Elija la columna para obtener el promedio", 
-            font=("Arial", 14), 
-            bg="#c3f1fd", 
-            anchor="center"  # Centra el texto dentro del Label
-        )
-        self.label.pack(padx=10, pady=10)
+        #Propiedades de canvas
+        canvas = Canvas(self, width=800, height=600, bg=color_fondo)
+        #scrollbar vertical para desplazamiento
+        scroll_vertical = Scrollbar(self, orient="vertical", command=canvas.yview)
+        scroll_vertical.pack(side="right", fill="y")
+        #scrollbar horizontal para desplazamiento
+        scroll_horizontal = Scrollbar(self, orient="horizontal", command=canvas.xview)
+        scroll_horizontal.pack(side="bottom", fill="x")
+        #se agregan el objeto canvas junto con las barras de desplazamiento
+        canvas.pack(side="left", fill="both", expand=True)
+        canvas.configure(yscrollcommand=scroll_vertical.set, xscrollcommand=scroll_horizontal)
+        #se agrega objeto canvas al frame
+        self.interior = Frame(canvas)
+        #se crea la ventana canvas con el frame
+        canvas.create_window((0, 0), window=self.interior, anchor="nw")
+        self.interior.config(bg=color_fondo)
+        self.interior.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
 
+        #se agregan componentes de titulos al frame
+        Label(self.interior, text="Bienvenido al Módulo para obtener la Clasificacion Promedio", font=fuente_titulo, bg=color_fondo).pack(anchor="w", padx=10, pady=10)
+        Label(self.interior, text="Seleccione la categoría por la cual desde obtener el Promedio", font=fuente_subtitulo, bg=color_fondo).pack(anchor="w", padx=10, pady=10)
+
+        #Menu de opciones para seleccion de categoria
         opciones = [("Cantidad de cuotas"),
                     ("Precio"),
                     ("Calificación"),
                     ("Costo de envío")]
 
-        self.label = Label(
-            self.interior,text=f"Seleccion: {opciones[0]}",
-            font=("Arial", 12), 
-            bg="#c3f1fd", 
-            anchor="center"  # Centra el texto dentro del Label
-        )
-        self.label.pack(padx=10, pady=10)
+        self.label = Label(self.interior, font=fuente_texto, bg=color_fondo, text=f"Seleccion: {opciones[0]}",)
+        #self.label = Label(self.interior,text=f"Seleccion: {opciones[0]}",)
+        self.label.pack(anchor="w", padx=10, pady=10)
 
         def selection():
             self.label.config(text=f"Seleccion: {criterio.get()}")
 
         criterio = StringVar(self.interior, f"{opciones[0]}")
 
+        #Asignando propiedades a los objetos RadioButton 
+        style = Style(self.interior) 
+        style.configure("TRadiobutton", background = color_fondo, 
+				foreground = "black", font = fuente_texto) 
+        
         for opcion in opciones:
             Radiobutton(
                 self.interior,
@@ -66,90 +77,153 @@ class ClasificacionPromedio(Toplevel):
                 command=selection,
             ).pack(anchor="w", padx=10, pady=5)
         
-        self.button_cerrar = Button(
-            self.interior,
-            text="Cerrar",
-            font=("Arial", 11),
-            bg="white",
-            fg="#333",
-            relief="flat",
-            padx=10,
-            pady=8,
-            activebackground="#f00",
-            activeforeground="white",
-            command=lambda: fg.FuncionesGenerales.cerrar_ventana(self)
+        #Bloque para alinear compomentes de tablas de resultados  
+        contenedor_tablas = Frame(self.interior, bg=color_fondo)
+        contenedor_tablas.pack(side="bottom", fill="x", pady=10)
+        
+        #Bloque para alinear compomentes de cerrar sesión
+        contenedor_btn_salir = Frame(self.interior, bg=color_fondo)
+        contenedor_btn_salir.pack(side="bottom", fill="x", pady=10)
+        
+        #Etiqueta y Boton para cerrar sesion o salir
+        lbl_salir = Label(
+                        contenedor_btn_salir,
+                        text="Salir",
+                        font=fuente_texto,
+                        bg=color_fondo,
+                        fg="#333",
+                        relief="flat",
+                        justify="left"
         )
-        self.button_cerrar.pack(pady=10)
+        lbl_salir.pack(side="left", padx=10)
+        
+        #Imagen para el boton
+        icono_btn_salir = PhotoImage(file="Recursos/iconos/x32/salir.png")
+        btn_salir = Button(contenedor_btn_salir, 
+                        image=icono_btn_salir, 
+                        bg=color_fondo, 
+                        width=ancho_icono, 
+                        height=largo_icono,
+                        relief="flat",
+                        command=lambda: fg.FuncionesGenerales.cerrar_ventana(self))
+        btn_salir.image = icono_btn_salir
+        btn_salir.pack(side="right", padx=300)
+        
+        #Bloque para alinear compomentes de procesar tiendas
+        contenedor_btn_archivo = Frame(self.interior, bg=color_fondo)
+        contenedor_btn_archivo.pack(side="bottom", fill="x", pady=10)
 
-        self.button_procesar = Button(
-            self.interior,
-            text="Seleccionar Archivos a Procesar",
-            font=("Arial", 11),
-            bg="white",
-            fg="#333",
-            relief="flat",
-            anchor="center",
-            padx=10,
-            pady=8,
-            activebackground="#00bfff",
-            activeforeground="white",
-            command=lambda: obtener_promedio_categoria(self, diccionarioPromedios, nombreTienda, criterio.get())
+        #Etiqueta y Boton para seleccionar las Tiendas a procesar
+        lbl_archivo = Label(
+                contenedor_btn_archivo,
+                text="Seleccione Tiendas a analizar",
+                font=fuente_texto,
+                bg=color_fondo,
+                fg="#333",
+                relief="flat",
+                justify="left"
         )
-        self.button_procesar.pack(pady=10)
+        lbl_archivo.pack(side="left", padx=10)
 
+        icono_btn_archivo = PhotoImage(file="Recursos/iconos/x32/abrir_archivos.png")
+        btn_archivo = Button(contenedor_btn_archivo,
+                             image=icono_btn_archivo,
+                             bg=color_fondo,
+                             width=ancho_icono,
+                             height=largo_icono,
+                             relief="flat",
+                             command=lambda: ClasificacionPromedio.obtener_promedio_categoria(contenedor_tablas, 
+                                                                        diccionarioPromedios, 
+                                                                        nombreTienda, 
+                                                                        criterio.get(), 
+                                                                        fuente_subtitulo, 
+                                                                        color_fondo))
+        btn_archivo.image = icono_btn_archivo
+        btn_archivo.pack(side="right", padx=300)        
 
+    def obtener_promedio_categoria(self, diccionarioPromedios, nombreTienda, criterio, fuente, color_fondo):
+        url_Archivos = filedialog.askopenfilenames()
+        if url_Archivos:
+            cantidadArchivos = len(url_Archivos)
+            messagebox.showinfo("Archivos Seleccionados", f"Se seleccionaron {cantidadArchivos} archivos", icon='info')
+            for archivo in url_Archivos:
+                nombreTienda = os.path.basename(archivo)
+                #valida si el archivo cargado no es csv, de ser así no se procesa
+                if not fg.FuncionesGenerales.validar_archivo_csv(self, nombreTienda):                
+                    continue
+                #si el archivo cargado es csv procesa su lectura
+                tienda = fg.FuncionesGenerales.leer_archivo(archivo)
+                if tienda is not None:
+                    titulo_encabezado = f"Registros de {nombreTienda}, agrupados por {criterio}"
+                    Label(self, text=titulo_encabezado, font=fuente, bg=color_fondo).pack(pady=10)
+                    #valida si se ingresó un criterio de agrupación
+                    if criterio == "":
+                        messagebox.showwarning("Criterio de Agrupación", "Por favor, ingrese un criterio de agrupación.", icon='warning')
+                        return
+                    #Se obtiene el promedio de ventas por criterio seleccionado
+                    promedio = fg.FuncionesGenerales.calcular_prom_x_criterio(tienda, criterio)
+                    Label(self, text=f"El promedio de {criterio} de {nombreTienda} es: {promedio:,.2f}", font=fuente, bg=color_fondo).pack(pady=10)                    
+                    #Informacion por cada tienda
+                    diccionarioPromedios[nombreTienda] = promedio
+                    #se invoca a la funcion para crear las tablas que muestran la informacion                    
+                    ClasificacionPromedio.crear_tabla(self, tienda, color_fondo)
+                else:
+                    messagebox.showerror("Error", f"Error al procesar el archivo {nombreTienda}", icon='error')    
+        else:
+            messagebox.showwarning("Archivo Seleccionado", f"No se seleccionó ningún archivo.", icon='warning')
 
-def obtener_promedio_categoria(self, diccionarioPromedios, nombreTienda, criterio):
-    url_Archivos = filedialog.askopenfilenames()
-    if url_Archivos:
-        cantidadArchivos = len(url_Archivos)
-        messagebox.showinfo("Archivos Seleccionados", f"Se seleccionaron {cantidadArchivos} archivos", icon='info')
-        for archivo in url_Archivos:
-            nombreTienda = os.path.basename(archivo)
-            tienda = fg.FuncionesGenerales.leer_archivo(archivo)
-            if tienda is not None:
-                Label(self.interior, text=f"Vista previa {nombreTienda}").pack(pady=10)
-                                
-                data = tienda
-                crear_tabla(self, data)
+        #Se valida si se procesaron tiendas y si no se encuentra doblemente procesadas
+        if fg.FuncionesGenerales.contiene_elementos_dict(diccionarioPromedios):   
+            #Etiqueta y boton para visualiazar graficas 
+            lbl_mostrar_grafica = Label(
+                    self,
+                    text="Mostrar Gráfica",
+                    font=fuente,
+                    bg=color_fondo,
+                    fg="#333",
+                    relief="flat",
+                    justify="left"
+            )
+            lbl_mostrar_grafica.pack(padx=10, pady=5)
+            
+            #Imagen para el boton
+            icono_btn_mostrar_grafica = PhotoImage(file="Recursos/iconos/x32/mostrar_grafica.png")
+            btn_mostrar_grafica = Button(self,
+                        text="Mostrar Gráfica",
+                        image=icono_btn_mostrar_grafica, 
+                        bg=color_fondo, 
+                        width=32, 
+                        height=32,
+                        relief="flat",
+                        command=lambda: ClasificacionPromedio.graficar_resultados(diccionarioPromedios, criterio))
+            btn_mostrar_grafica.image = icono_btn_mostrar_grafica
+            btn_mostrar_grafica.pack(padx=10, pady=20)
 
-                promedio = fg.FuncionesGenerales.calcular_prom_x_criterio(tienda, criterio)
-                Label(self.interior, text=f"El promedio de {criterio} de {nombreTienda} es: {promedio}").pack(pady=10)
-                
-                diccionarioPromedios[nombreTienda] = promedio
-            else:
-                messagebox.showerror("Error", f"Error al procesar el archivo {nombreTienda}", icon='error')    
-    else:
-        messagebox.showwarning("Archivo Seleccionado", f"No se seleccionó ningún archivo.", icon='warning')
+        return diccionarioPromedios, nombreTienda
 
-    if fg.FuncionesGenerales.contiene_elementos_dict(diccionarioPromedios):   
-        self.button = Button(self.interior, text="Graficar Resultados", command=lambda: graficar_resultados(diccionarioPromedios, criterio))
-        self.button.pack(pady=10) 
+    def crear_tabla(self, data, color_fondo):
+        try:
+            dataFrame = pd.DataFrame(data)
+            dataFrame['Precio'] = dataFrame['Precio'].apply(lambda x: "${:,.2f}".format(x))
+            dataFrame['Costo de envío'] = dataFrame['Costo de envío'].apply(lambda x: "${:,.2f}".format(x))
+            frame = Frame(self, bg=color_fondo)
+            frame.pack(fill="both", expand=True, padx=10, pady=10)
+            table = Table(frame, dataframe=dataFrame, showtoolbar=True, showstatusbar=True, tablefmt='plain')
+            table.autoResizeColumns()
+            table.adjustColumnWidths()
+            table.editable = False
+            table.show() 
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al crear el DataFrame: {e}", icon='error')
 
-    return diccionarioPromedios, nombreTienda
-
-def crear_tabla(self, data):
-    try:
-        dataFrame = pd.DataFrame(data)
-        frame = Frame(self.interior)
-        frame.pack(fill="both", expand=True)
-        table = Table(frame, dataframe=dataFrame, showtoolbar=True, showstatusbar=True, tablefmt='plain')
-        table.autoResizeColumns()
-        table.show() 
-    except Exception as e:
-        messagebox.showerror("Error", f"Error al crear el DataFrame: {e}", icon='error')
-
-def graficar_resultados(diccionarioPromedios, criterio):
-    tienda = list(diccionarioPromedios.keys())
-    promedio = list(diccionarioPromedios.values())    
-    maximo = max(promedio)
-    colores = ['red' if costo == maximo else 'green' for costo in promedio]
-    
- 
-    plt.barh(tienda, promedio, color=colores)
-    plt.xlabel(f'Promedio de {criterio} por tienda')
-    plt.ylabel('Tiendas')
-    plt.title(f'Promedio de {criterio} por tienda')
-    plt.show()
-
-    
+    def graficar_resultados(diccionarioPromedios, criterio):
+        try:
+            tienda = list(diccionarioPromedios.keys())
+            promedio = list(diccionarioPromedios.values())    
+            plt.barh(tienda, promedio)
+            plt.xlabel(f'{criterio} por tienda')
+            plt.ylabel('Tiendas')
+            plt.title(f'Promedio de {criterio} por tienda')
+            plt.show()
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al generar la gráfica: {e}", icon='error')
