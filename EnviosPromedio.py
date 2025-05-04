@@ -107,7 +107,7 @@ def graficar_resultados(dictTotales):
     costo_prom_envios = list(dictTotales.values())   
 
     maximo = max(costo_prom_envios)
-    colores = ['green' if costo == maximo else 'red' for costo in costo_prom_envios]
+    colores = ['green' if costo != maximo else 'red' for costo in costo_prom_envios]
     
 
     plt.bar(tienda, costo_prom_envios, color=colores)

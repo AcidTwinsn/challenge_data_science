@@ -1,5 +1,6 @@
-import pandas as pd
 from tkinter import messagebox
+import pandas as pd
+
 class FuncionesGenerales:
    def leer_archivo(url):
       try:
@@ -70,13 +71,13 @@ class FuncionesGenerales:
 
    def calcular_prom_x_criterio(tienda, criterio):
       return tienda[criterio].mean()
-  
+   
    def cerrar_ventana(self):
-      if messagebox.askokcancel("Salir", "¿Desea salir de la aplicación?"):
-         self.destroy()
-         
+    if messagebox.askokcancel("Salir", "¿Desea salir de la aplicación?"):
+        self.destroy()
+
    def validar_archivo_csv(self, archivo):
       if not archivo.endswith('.csv'):
          messagebox.showerror("Error", f"El archivo {archivo} no es un archivo CSV", icon='error')
          return False
-      return True
+      return True     

@@ -151,3 +151,5 @@ def graficar_resultados(diccionarioPromedios, criterio):
     plt.ylabel('Tiendas')
     plt.title(f'Promedio de {criterio} por tienda')
     plt.show()
+
+    
